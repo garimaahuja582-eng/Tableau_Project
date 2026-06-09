@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chocolate Sales Dashboard 2022</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --choco-dark: #1a0a00;
+    --choco-rich: #3d1a00;
+    --choco-mid: #6b2d00;
+    --choco-warm: #c4622d;
+    --choco-gold: #e8a020;
+    --choco-cream: #f5e6c8;
+    --choco-light: #fdf4e3;
+    --text-primary: #1a0a00;
+    --text-muted: #7a5c3a;
+    --card-bg: #ffffff;
+    --border: #edd9b0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--choco-light);
+    color: var(--text-primary);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, var(--choco-dark) 0%, var(--choco-rich) 60%, var(--choco-mid) 100%);
+    padding: 32px 40px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(232, 160, 32, 0.12);
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 20%;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: rgba(196, 98, 45, 0.1);
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    position: relative; z-index: 1;
+  }
+  .brand-tag {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    color: var(--choco-gold);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--choco-cream);
+    line-height: 1.1;
+    letter-spacing: -0.5px;
+  }
+  h1 span {
+    color: var(--choco-gold);
+  }
+  .header-meta {
+    text-align: right;
+    color: rgba(245, 230, 200, 0.6);
+    font-size: 13px;
+  }
+  .header-meta strong {
+    display: block;
+    color: var(--choco-cream);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 36px 40px 60px;
+  }
+
+  /* KPI CARDS */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 36px;
+  }
+  .kpi-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 24px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(61, 26, 0, 0.12);
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 0 0 16px 16px;
+  }
+  .kpi-card:nth-child(1)::after { background: var(--choco-gold); }
+  .kpi-card:nth-child(2)::after { background: var(--choco-warm); }
+  .kpi-card:nth-child(3)::after { background: #4caf50; }
+  .kpi-card:nth-child(4)::after { background: #2196f3; }
+  .kpi-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--choco-dark);
+    line-height: 1;
+  }
+  .kpi-sub {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--choco-dark);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* GRID LAYOUTS */
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  .row-3 {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 260px;
+  }
+  .chart-wrap-lg {
+    position: relative;
+    height: 300px;
+  }
+
+  /* LEADERBOARD TABLE */
+  .leaderboard {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .leaderboard th {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+  }
+  .leaderboard td {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-bottom: 1px solid #f0e6d0;
+  }
+  .leaderboard tr:last-child td { border-bottom: none; }
+  .leaderboard tr:hover td { background: var(--choco-light); }
+  .rank-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .rank-1 { background: #ffd700; color: #1a0a00; }
+  .rank-2 { background: #c0c0c0; color: #1a0a00; }
+  .rank-3 { background: #cd7f32; color: white; }
+  .rank-other { background: var(--choco-cream); color: var(--choco-dark); }
+  .bar-mini {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--choco-gold), var(--choco-warm));
+    transition: width 0.6s ease;
+  }
+  .amount-cell {
+    font-weight: 600;
+    color: var(--choco-rich);
+  }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="brand-tag">🍫 Sales Analytics</div>
+      <h1>Chocolate Sales<br><span>Dashboard</span></h1>
+    </div>
+    <div class="header-meta">
+      <strong>Jan – Aug 2022</strong>
+      6 Countries · 22 Products · 25 Sales Reps
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- KPI CARDS -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <span class="kpi-icon">💰</span>
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">$6.18M</div>
+      <div class="kpi-sub">Jan–Aug 2022</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">📦</span>
+      <div class="kpi-label">Boxes Shipped</div>
+      <div class="kpi-value">177K</div>
+      <div class="kpi-sub">Across all countries</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">🧾</span>
+      <div class="kpi-label">Transactions</div>
+      <div class="kpi-value">1,094</div>
+      <div class="kpi-sub">Total orders placed</div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">📊</span>
+      <div class="kpi-label">Avg Sale Value</div>
+      <div class="kpi-value">$5,652</div>
+      <div class="kpi-sub">Per transaction</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: Monthly Trend + Country Pie -->
+  <div class="row-2">
+    <div class="card">
+      <div class="card-title">📅 Monthly Revenue & Boxes Shipped</div>
+      <div class="chart-wrap-lg">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌍 Revenue by Country</div>
+      <div class="chart-wrap-lg">
+        <canvas id="countryChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Top Products bar + Sales Leaderboard -->
+  <div class="row-3">
+    <div class="card">
+      <div class="card-title">🍫 Top 10 Products by Revenue</div>
+      <div class="chart-wrap-lg">
+        <canvas id="productChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 Sales Rep Leaderboard</div>
+      <div style="overflow-y:auto; max-height:320px;">
+        <table class="leaderboard">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Sales Rep</th>
+              <th>Revenue</th>
+              <th style="width:80px">Share</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: Country Boxes Bar -->
+  <div class="card" style="margin-bottom:28px">
+    <div class="card-title">📦 Boxes Shipped by Country</div>
+    <div class="chart-wrap">
+      <canvas id="boxesChart"></canvas>
+    </div>
+  </div>
+
+</main>
+
+<footer>Chocolate Sales Dashboard 2022 · Data: 1,094 transactions across 6 countries</footer>
+
+<script>
+const COLORS = {
+  dark: '#3d1a00',
+  rich: '#6b2d00',
+  warm: '#c4622d',
+  gold: '#e8a020',
+  amber: '#d4820a',
+  tan: '#b8926a',
+  cream: '#f5e6c8',
+  green: '#4caf50',
+  blue: '#2196f3',
+};
+
+const PALETTE = ['#e8a020','#c4622d','#6b2d00','#3d1a00','#b8926a','#d4820a','#7a5c3a','#f5e6c8','#4caf50','#2196f3'];
+
+// DATA
+const monthlyRevenue = {
+  '2022-01': 896105, '2022-02': 699377, '2022-03': 749483,
+  '2022-04': 674051, '2022-05': 752892, '2022-06': 865144,
+  '2022-07': 803425, '2022-08': 743148
+};
+const monthlyBoxes = {
+  '2022-01': 27535, '2022-02': 18015, '2022-03': 19561,
+  '2022-04': 21003, '2022-05': 21856, '2022-06': 26260,
+  '2022-07': 22876, '2022-08': 19901
+};
+const byCountry = {Australia:1137367, UK:1051792, India:1045800, USA:1035349, Canada:962899, 'New Zealand':950418};
+const boxesByCountry = {Australia:32647, Canada:31221, UK:30265, India:29470, USA:26824, 'New Zealand':26580};
+const byProduct = {
+  'Smooth Sliky Salty':349692,'50% Dark Bites':341712,'White Choc':329147,
+  'Peanut Butter Cubes':324842,'Eclairs':312445,'99% Dark & Pure':299796,
+  '85% Dark Bars':299229,'Organic Choco Syrup':294700,'Spicy Special Slims':293454,'Mint Chip Choco':283969
+};
+const byPerson = {
+  'Ches Bonnell':320901,'Oby Sorrel':316645,'Madelene Upcott':316099,
+  'Brien Boise':312816,'Kelci Walkden':311710,'Van Tuxwell':303149,
+  'Dennison Crosswaite':291669,'Beverie Moffet':278922,'Kaine Padly':266490,"Marney O'Breen":259742
+};
+
+const fmt = n => '$' + (n >= 1e6 ? (n/1e6).toFixed(2)+'M' : n >= 1e3 ? (n/1e3).toFixed(0)+'K' : n);
+const fmtFull = n => '$' + n.toLocaleString();
+const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug'];
+
+// MONTHLY CHART
+new Chart(document.getElementById('monthlyChart'), {
+  type: 'bar',
+  data: {
+    labels: months,
+    datasets: [
+      {
+        label: 'Revenue ($)',
+        data: Object.values(monthlyRevenue),
+        backgroundColor: Object.keys(monthlyRevenue).map((_, i) => i % 2 === 0 ? COLORS.gold : COLORS.warm),
+        borderRadius: 6,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Boxes Shipped',
+        data: Object.values(monthlyBoxes),
+        type: 'line',
+        borderColor: COLORS.dark,
+        backgroundColor: 'transparent',
+        pointBackgroundColor: COLORS.dark,
+        pointRadius: 4,
+        tension: 0.4,
+        yAxisID: 'y1',
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { font: { family: 'Inter', size: 12 } } } },
+    scales: {
+      y: { position: 'left', ticks: { callback: v => fmt(v), font: { size: 11 } }, grid: { color: '#f0e6d0' } },
+      y1: { position: 'right', ticks: { font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+// COUNTRY PIE
+new Chart(document.getElementById('countryChart'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(byCountry),
+    datasets: [{
+      data: Object.values(byCountry),
+      backgroundColor: PALETTE.slice(0, 6),
+      borderWidth: 2, borderColor: '#fff',
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '58%',
+    plugins: {
+      legend: { position: 'right', labels: { font: { family: 'Inter', size: 12 }, padding: 12 } },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${fmt(ctx.raw)}` } }
+    }
+  }
+});
+
+// PRODUCT BAR (horizontal)
+new Chart(document.getElementById('productChart'), {
+  type: 'bar',
+  data: {
+    labels: Object.keys(byProduct),
+    datasets: [{
+      label: 'Revenue',
+      data: Object.values(byProduct),
+      backgroundColor: PALETTE,
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { ticks: { callback: v => fmt(v), font: { size: 11 } }, grid: { color: '#f0e6d0' } },
+      y: { ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// BOXES BY COUNTRY BAR
+new Chart(document.getElementById('boxesChart'), {
+  type: 'bar',
+  data: {
+    labels: Object.keys(boxesByCountry),
+    datasets: [{
+      label: 'Boxes Shipped',
+      data: Object.values(boxesByCountry),
+      backgroundColor: [COLORS.gold, COLORS.warm, COLORS.rich, COLORS.dark, COLORS.tan, COLORS.amber],
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { ticks: { font: { size: 11 } }, grid: { color: '#f0e6d0' } },
+      x: { ticks: { font: { size: 12, weight: '500' } } }
+    }
+  }
+});
+
+// LEADERBOARD
+const maxRevenue = Math.max(...Object.values(byPerson));
+const body = document.getElementById('leaderboardBody');
+Object.entries(byPerson).forEach(([name, rev], i) => {
+  const rank = i + 1;
+  const pct = (rev / maxRevenue * 100).toFixed(0);
+  const rankClass = rank <= 3 ? `rank-${rank}` : 'rank-other';
+  body.innerHTML += `
+    <tr>
+      <td><span class="rank-badge ${rankClass}">${rank}</span></td>
+      <td style="font-weight:500">${name}</td>
+      <td class="amount-cell">${fmtFull(rev)}</td>
+      <td><div class="bar-mini" style="width:${pct}%"></div></td>
+    </tr>
+  `;
+});
+</script>
+</body>
+</html>
